@@ -1,7 +1,8 @@
 # Calculator
-A terminal-based calculator that solves an equation.
+A terminal-based calculator that solves math equations.
 ## Features
-Handles equations with addition, subtraction, multiplication, and division.
+- Validates user input.
+- Handles math equations with addition, subtraction, multiplication, and division.
 ## Compile and Execute
 g++ -o calc Calculator.cpp  
 calc
@@ -10,6 +11,6 @@ calc
   
 ![Calculator End](screenshots/CalculatorEnd.png)
 ## Future Improvements
-- Handles equations with parenthesis.
+- Handles equations with parenthesis and/or other operations.
 - Handles decimal numbers input.
 - Internal structure modified to improve modularity.
