@@ -1,18 +1,18 @@
 /* Program: Simple Calculator
- * Description: A terminal-based calculator that solves math equations.
+ * Description: A terminal-based calculator that solves math problems.
  *              This implementation of a calculator takes in a math 
- *              equation from user input and attempts to solve it.
- *              Currently, the calculator only handles math equations that
- *              involves whole numbers and the following operations,
+ *              expression from user input and attempts to solve it.
+ *              Currently, the calculator only handles math expressions that
+ *              involve whole numbers and the following operations,
  *              ordered by priority:
  *                  - Multiplication and Division
  *                  - Addition and Subtraction
- *              If the equation has several operations of the same priority,
- *              the equation is solved from left to right.
+ *              If the expression has several operations of the same priority,
+ *              the expression is solved from left to right.
  *              Furthermore, the program restricts the digits of a whole
- *              number to 10 and the digits of the whole equation to 50.
- *              If the user inputs an equation outside these restrictions,
- *              the program will prompt the user to input an equation again.
+ *              number to 10 and the digits of the whole expression to 50.
+ *              If the user inputs an expression outside these restrictions,
+ *              the program will prompt the user to input an expression again.
  * Author: J. Pettersson
  * Date: 2025-07-22
  */
@@ -31,41 +31,41 @@ struct element {
 /* --------------------- Function Declarations --------------------- */
 
 void printIntro(void);
-std::string requestInputEquation(void);
-bool isExit(std::string equation);
+std::string requestInputExpression(void);
+bool isExit(std::string str);
 std::vector<element> parse(std::string str);
 element updateOperand(element element, char digit, int exp);
-double getResult(std::vector<element> equation);
+double getResult(std::vector<element> expression);
 element calculate(element element1, element element2);
 double multiply(double one, double two);
 double divide(double one, double two);
 double add(double one, double two);
 double minus(double one, double two);
-std::vector<element> updateVector(std::vector<element> equation, 
-        element element, int index);
+std::vector<element> updateVector(std::vector<element> expression, 
+    element element, int index);
 
 /* ------------------------- Main Function ------------------------- */
 
 int main() {
     std::string str;
-    std::vector<element> equation;
+    std::vector<element> expression;
     double result;
 
     printIntro();
 
     while (true) {
-        str = requestInputEquation();
+        str = requestInputExpression();
 
         if (isExit(str)) {
             return 0;
         }
 
-        equation = parse(str);
+        expression = parse(str);
 
-        if (!equation.empty()) {
-            std::cout << "The result is: " << getResult(equation) << "\n\n";
+        if (!expression.empty()) {
+            std::cout << "The result is: " << getResult(expression) << "\n\n";
         } else {
-            std::cout << "Invalid equation, try again.\n\n";
+            std::cout << "Invalid expression, try again.\n\n";
         }
     }
     return 0;
@@ -85,10 +85,10 @@ void printIntro(void) {
               << "\t3. * (Multiplication)\n"
               << "\t4. / (Division)\n\n"
               << "Rules:\n"
-              << "\t1. The equation has to be a legal mathematical equation.\n"
+              << "\t1. The input has to be a legal mathematical expression.\n"
               << "\t2. The numbers must be an integer.\n"
               << "\t3. Numbers cannot exceed 10 digits.\n"
-              << "\t4. The equation cannot exceed 50 digits.\n\n"
+              << "\t4. The expression cannot exceed 50 digits.\n\n"
               << "To exit program, type 'e'\n\n";
 }
 
@@ -96,15 +96,15 @@ void printIntro(void) {
  * Reads user input from the terminal.
  * @return the user input as a string
  */
-std::string requestInputEquation(void) {
-    std::string equation;
+std::string requestInputExpression(void) {
+    std::string expression;
 
-    while (equation.empty()) {
-        std::cout << "Insert equation: ";
-        std::getline(std::cin, equation);
+    while (expression.empty()) {
+        std::cout << "Insert expression: ";
+        std::getline(std::cin, expression);
     }
     
-    return equation;
+    return expression;
 }
 
 /* --------------------- Read Input Functions ---------------------- */
@@ -122,13 +122,13 @@ bool isExit(std::string str) {
 }
 
 /*
- * Validates the user input and parses the math equation
+ * Validates the user input and parses the math expression
  * from a string to a vector.
  * @param str the user input read from the terminal
- * @return the math equation if valid, otherwise nothing
+ * @return the math expression if valid, otherwise nothing
  */
 std::vector<element> parse(std::string str) {
-    std::vector<element> equation;
+    std::vector<element> expression;
     element element;
     int digitCount = 0;
     int operatorCount = 0;
@@ -142,6 +142,8 @@ std::vector<element> parse(std::string str) {
     for (int i = str.size() - 1 ; i >= 0 ; i--) {
         if (str.at(i) == ' ') {
             str.erase(i, 1);
+        } else if (digitCount >= 10) {
+            return {};
         } else if ((str.at(i) >= '1' && str.at(i) <= '9') ||
                 (digitCount > 0 && str.at(i) == '0')) {
             element = updateOperand(element, str.at(i), digitCount);
@@ -159,12 +161,12 @@ std::vector<element> parse(std::string str) {
                 negativeCount++;
             }
 
-            equation.push_back(element);
+            expression.push_back(element);
             element = {};
         } else if (operatorCount == 1 && negativeCount == 1 &&
                 (str.at(i) == '+' || str.at(i) == '-' || str.at(i) == '*' ||
                 str.at(i) == '/')) {
-            element = equation.back();
+            element = expression.back();
 
             if (str.at(i) == '-') {
                 element.operation = '+';
@@ -173,8 +175,8 @@ std::vector<element> parse(std::string str) {
                 element.operation = str.at(i);
             }
 
-            equation.pop_back();
-            equation.push_back(element);
+            expression.pop_back();
+            expression.push_back(element);
             negativeCount++;
             element = {}; 
         } else {
@@ -192,10 +194,10 @@ std::vector<element> parse(std::string str) {
         }
 
         element.operation = '+';
-        equation.push_back(element);
+        expression.push_back(element);
     }
 
-    return equation;
+    return expression;
 }
 
 /*
@@ -214,34 +216,34 @@ element updateOperand(element element, char digit, int exp) {
 /* ---------------------- Calculate Functions ---------------------- */
 
 /*
- * Solves the input equation and returns its result.
- * @param equation the input equation to solve
- * @return the result of the input equation
+ * Solves the input expression and returns its result.
+ * @param expression the input expression to solve
+ * @return the result of the input expression
  */
-double getResult(std::vector<element> equation) {
+double getResult(std::vector<element> expression) {
     double result;
     element element = {};
     int size;
     int index;
 
     // Multiplication and Division
-    size = equation.size();
+    size = expression.size();
     for (int i = size - 2 ; i >= 0 ; i--) {
-        if (equation.at(i).operation == '*' ||
-                equation.at(i).operation == '/') {
-            element = calculate(equation.at(i + 1), equation.at(i));
-            equation = updateVector(equation, element, i);
+        if (expression.at(i).operation == '*' ||
+                expression.at(i).operation == '/') {
+            element = calculate(expression.at(i + 1), expression.at(i));
+            expression = updateVector(expression, element, i);
         }
     }
 
     // Addition and Subtraction
-    size = equation.size();
+    size = expression.size();
     for (int i = size - 2 ; i >= 0 ; i--) {
-        element = calculate(equation.at(i + 1), equation.at(i));
-        equation = updateVector(equation, element, i);
+        element = calculate(expression.at(i + 1), expression.at(i));
+        expression = updateVector(expression, element, i);
     }
 
-    return equation.at(0).operand;
+    return expression.at(0).operand;
 }
 
 /*
@@ -313,16 +315,16 @@ double minus(double a, double b) {
 }
 
 /*
- * Updates the equation after one operation was performed.
- * @param equation the equation
+ * Updates the expression after one operation was performed.
+ * @param expression the expression
  * @param element the result of the operation
- * @param index the position in the equation where
+ * @param index the position in the expression where
  *        the operation was performed.
  * @return the updated vector data structure 
  */
-std::vector<element> updateVector(std::vector<element> equation, 
+std::vector<element> updateVector(std::vector<element> expression, 
         element element, int index) {
-    equation.erase(equation.begin() + index, equation.begin() + index + 2);
-    equation.insert(equation.begin() + index, element);
-    return equation;
+    expression.erase(expression.begin() + index, expression.begin() + index + 2);
+    expression.insert(expression.begin() + index, element);
+    return expression;
 }
